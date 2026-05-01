@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>VEX Override — Live Scorer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── HEADER ──────────────────────────────────────────────── -->
+    <header class="app-header">
+      <h1 class="app-title">VEX Override</h1>
+      <div class="timer-block">
+        <div id="timer-display" class="timer-display">2:00</div>
+        <div id="phase-label" class="phase-label">PRE-MATCH</div>
+      </div>
+      <div class="timer-controls">
+        <button id="btn-start" class="btn btn-start" onclick="startTimer()">▶ Start</button>
+        <button id="btn-pause" class="btn btn-pause" onclick="pauseTimer()" disabled>⏸ Pause</button>
+        <button id="btn-reset" class="btn btn-reset" onclick="resetTimer()">↺ Reset</button>
+      </div>
+    </header>
+
+    <!-- ── SCOREBOARD ─────────────────────────────────────────── -->
+    <div class="scoreboard">
+      <div class="score-panel red-panel">
+        <div class="alliance-tag">RED</div>
+        <div id="red-score" class="score-value">0</div>
+      </div>
+      <div class="score-separator">VS</div>
+      <div class="score-panel blue-panel">
+        <div class="alliance-tag">BLUE</div>
+        <div id="blue-score" class="score-value">0</div>
+      </div>
+    </div>
+
+    <!-- ── AUTONOMOUS WINNER ───────────────────────────────────── -->
+    <section id="auton-section" class="auton-section">
+      <div class="auton-heading">Autonomous Winner</div>
+      <div class="auton-btns">
+        <button id="aw-red"  class="btn aw-btn aw-red"  onclick="setAutonWinner('red')">RED</button>
+        <button id="aw-tie"  class="btn aw-btn aw-tie"  onclick="setAutonWinner('tie')">TIE</button>
+        <button id="aw-blue" class="btn aw-btn aw-blue" onclick="setAutonWinner('blue')">BLUE</button>
+        <button id="aw-none" class="btn aw-btn aw-none active-aw" onclick="setAutonWinner('none')">NONE</button>
+      </div>
+    </section>
+
+    <!-- ── FIELD MAP ───────────────────────────────────────────── -->
+    <section class="field-section">
+      <div class="field-section-title">FIELD MAP</div>
+
+      <div class="field-grid">
+
+        <!-- Q1 ─ top-left -->
+        <div class="quadrant-card" id="cell-q0">
+          <div class="quad-header">
+            <span class="quad-name">Q1</span>
+            <button class="toggle-btn" id="toggle-q0" onclick="cycleToggle(0)">NEUTRAL</button>
+          </div>
+          <div class="counters">
+            <div class="counter-row red-row">
+              <span class="ctr-label">Red Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',0,'red',-1)">−</button>
+                <span class="ctr-val" id="q0-red">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',0,'red',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row blue-row">
+              <span class="ctr-label">Blue Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',0,'blue',-1)">−</button>
+                <span class="ctr-val" id="q0-blue">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',0,'blue',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row yellow-row">
+              <span class="ctr-label">Yellow Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',0,'yellow',-1)">−</button>
+                <span class="ctr-val" id="q0-yellow">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',0,'yellow',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q2 ─ top-right -->
+        <div class="quadrant-card" id="cell-q1">
+          <div class="quad-header">
+            <span class="quad-name">Q2</span>
+            <button class="toggle-btn" id="toggle-q1" onclick="cycleToggle(1)">NEUTRAL</button>
+          </div>
+          <div class="counters">
+            <div class="counter-row red-row">
+              <span class="ctr-label">Red Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',1,'red',-1)">−</button>
+                <span class="ctr-val" id="q1-red">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',1,'red',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row blue-row">
+              <span class="ctr-label">Blue Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',1,'blue',-1)">−</button>
+                <span class="ctr-val" id="q1-blue">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',1,'blue',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row yellow-row">
+              <span class="ctr-label">Yellow Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',1,'yellow',-1)">−</button>
+                <span class="ctr-val" id="q1-yellow">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',1,'yellow',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MIDFIELD ─ center, full-width row -->
+        <div class="midfield-card" id="cell-mf">
+          <div class="mf-header">
+            <span class="mf-title">⚡ MIDFIELD</span>
+            <div class="mf-robots">
+              <div class="robot-group">
+                <span class="robot-label red-label">Red Robots</span>
+                <div class="robot-btns">
+                  <button class="robot-btn" id="rr-0" onclick="setRobots('red',0)">0</button>
+                  <button class="robot-btn" id="rr-1" onclick="setRobots('red',1)">1</button>
+                  <button class="robot-btn" id="rr-2" onclick="setRobots('red',2)">2</button>
+                </div>
+              </div>
+              <div class="robot-group">
+                <span class="robot-label blue-label">Blue Robots</span>
+                <div class="robot-btns">
+                  <button class="robot-btn" id="br-0" onclick="setRobots('blue',0)">0</button>
+                  <button class="robot-btn" id="br-1" onclick="setRobots('blue',1)">1</button>
+                  <button class="robot-btn" id="br-2" onclick="setRobots('blue',2)">2</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="counters mf-counters">
+            <div class="counter-row red-row">
+              <span class="ctr-label">Red Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('mf',0,'red',-1)">−</button>
+                <span class="ctr-val" id="mf-red">0</span>
+                <button class="ctr-btn" onclick="changeHalf('mf',0,'red',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row blue-row">
+              <span class="ctr-label">Blue Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('mf',0,'blue',-1)">−</button>
+                <span class="ctr-val" id="mf-blue">0</span>
+                <button class="ctr-btn" onclick="changeHalf('mf',0,'blue',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row yellow-row">
+              <span class="ctr-label">Yellow Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('mf',0,'yellow',-1)">−</button>
+                <span class="ctr-val" id="mf-yellow">0</span>
+                <button class="ctr-btn" onclick="changeHalf('mf',0,'yellow',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q3 ─ bottom-left -->
+        <div class="quadrant-card" id="cell-q2">
+          <div class="quad-header">
+            <span class="quad-name">Q3</span>
+            <button class="toggle-btn" id="toggle-q2" onclick="cycleToggle(2)">NEUTRAL</button>
+          </div>
+          <div class="counters">
+            <div class="counter-row red-row">
+              <span class="ctr-label">Red Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',2,'red',-1)">−</button>
+                <span class="ctr-val" id="q2-red">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',2,'red',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row blue-row">
+              <span class="ctr-label">Blue Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',2,'blue',-1)">−</button>
+                <span class="ctr-val" id="q2-blue">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',2,'blue',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row yellow-row">
+              <span class="ctr-label">Yellow Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',2,'yellow',-1)">−</button>
+                <span class="ctr-val" id="q2-yellow">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',2,'yellow',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q4 ─ bottom-right -->
+        <div class="quadrant-card" id="cell-q3">
+          <div class="quad-header">
+            <span class="quad-name">Q4</span>
+            <button class="toggle-btn" id="toggle-q3" onclick="cycleToggle(3)">NEUTRAL</button>
+          </div>
+          <div class="counters">
+            <div class="counter-row red-row">
+              <span class="ctr-label">Red Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',3,'red',-1)">−</button>
+                <span class="ctr-val" id="q3-red">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',3,'red',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row blue-row">
+              <span class="ctr-label">Blue Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',3,'blue',-1)">−</button>
+                <span class="ctr-val" id="q3-blue">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',3,'blue',1)">+</button>
+              </div>
+            </div>
+            <div class="counter-row yellow-row">
+              <span class="ctr-label">Yellow Halves</span>
+              <div class="ctr-controls">
+                <button class="ctr-btn" onclick="changeHalf('q',3,'yellow',-1)">−</button>
+                <span class="ctr-val" id="q3-yellow">0</span>
+                <button class="ctr-btn" onclick="changeHalf('q',3,'yellow',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.field-grid -->
+    </section>
+
+    <!-- ── SCORE BREAKDOWN ────────────────────────────────────── -->
+    <section class="breakdown-section">
+      <div class="breakdown-heading">Score Breakdown</div>
+      <div class="breakdown-grid">
+        <div class="breakdown-col red-breakdown">
+          <div class="bd-title">RED</div>
+          <div id="red-breakdown" class="bd-lines"></div>
+        </div>
+        <div class="breakdown-col blue-breakdown">
+          <div class="bd-title">BLUE</div>
+          <div id="blue-breakdown" class="bd-lines"></div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /#app -->
+
+  <script src="app.js"></script>
+</body>
+</html>
