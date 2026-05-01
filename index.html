@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEX Override – Live Scorer</title>
+<style>
+  :root {
+    --red:   #e53935;
+    --red-dark: #b71c1c;
+    --blue:  #1e88e5;
+    --blue-dark: #0d47a1;
+    --yellow: #fdd835;
+    --yellow-dark: #f9a825;
+    --neutral: #546e7a;
+    --bg:    #0d1117;
+    --card:  #161b22;
+    --border: #30363d;
+    --text:  #e6edf3;
+    --sub:   #8b949e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 8px;
+    user-select: none;
+  }
+
+  /* ── Header / Scoreboard ── */
+  #header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .alliance-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 900;
+  }
+  .alliance-score.red  { background: var(--red-dark); }
+  .alliance-score.blue { background: var(--blue-dark); }
+  .alliance-score .label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; opacity: .8; }
+  .alliance-score .score { font-size: 3rem; line-height: 1; }
+
+  #timer-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  #phase-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #21262d;
+    color: var(--sub);
+  }
+  #phase-badge.auto { background: #fdd835; color: #000; }
+  #phase-badge.driver { background: #1e88e5; color: #fff; }
+  #timer {
+    font-size: 2.8rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+  }
+  #timer.urgent { color: var(--red); animation: pulse 0.5s infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
+  #timer-controls { display: flex; gap: 6px; }
+  .btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter .15s;
+  }
+  .btn:hover { filter: brightness(1.2); }
+  .btn:active { filter: brightness(0.85); }
+  .btn-start  { background: #238636; color: #fff; }
+  .btn-pause  { background: #9e6a03; color: #fff; }
+  .btn-reset  { background: #343941; color: var(--text); }
+
+  /* ── Autonomous Winner ── */
+  #auton-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  #auton-row .label { font-size: 0.75rem; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+  .auton-btn {
+    padding: 5px 16px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    background: var(--card);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .auton-btn:hover { filter: brightness(1.2); }
+  .auton-btn.active-red    { background: var(--red-dark);  border-color: var(--red);    color: #fff; }
+  .auton-btn.active-blue   { background: var(--blue-dark); border-color: var(--blue);   color: #fff; }
+  .auton-btn.active-tie    { background: #6a0dad;          border-color: #a855f7;        color: #fff; }
+  .auton-btn.active-none   { background: var(--neutral);   border-color: #78909c;        color: #fff; }
+
+  /* ── Field Map ── */
+  #quadrants {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-width: 780px;
+    margin: 0 auto 8px;
+  }
+  #midfield-wrap {
+    max-width: 780px;
+    margin: 0 auto 10px;
+  }
+  .quadrant {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .quadrant-label {
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--sub);
+    text-align: center;
+    font-weight: 700;
+  }
+
+  /* Toggle */
+  .toggle-btn {
+    width: 100%;
+    padding: 10px 6px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all .15s;
+    letter-spacing: 1px;
+  }
+  .toggle-btn:hover { filter: brightness(1.15); }
+  .toggle-btn:active { transform: scale(0.97); }
+  .toggle-red    { background: var(--red);    color: #fff; }
+  .toggle-blue   { background: var(--blue);   color: #fff; }
+  .toggle-yellow { background: var(--yellow); color: #000; }
+
+  /* Pin counters */
+  .pins-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+  }
+  .pin-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .pin-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .pin-label.red    { color: #ef9a9a; }
+  .pin-label.blue   { color: #90caf9; }
+  .pin-label.yellow { color: #fff59d; }
+  .pin-value {
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
+    min-width: 36px;
+    text-align: center;
+  }
+  .pin-controls { display: flex; gap: 3px; }
+  .pin-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: pointer;
+    line-height: 1;
+    transition: filter .1s;
+  }
+  .pin-btn:active { transform: scale(0.9); }
+  .pin-btn.minus { background: #21262d; color: var(--sub); }
+  .pin-btn.plus  { color: #fff; }
+  .pin-btn.plus.red    { background: var(--red); }
+  .pin-btn.plus.blue   { background: var(--blue); }
+  .pin-btn.plus.yellow { background: var(--yellow-dark); color: #000; }
+
+  /* Midfield panel */
+  #midfield {
+    background: #1a2332;
+    border: 2px solid #3d5a80;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #midfield .quadrant-label { color: #64b5f6; text-align: center; }
+  #midfield-inner { display: flex; flex-direction: column; gap: 10px; }
+  .mid-robots-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+  }
+  .mid-pin-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+  }
+  .robot-section { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .mid-pin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .mid-pin-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    flex: 1;
+  }
+  .mid-pin-label.red    { color: #ef9a9a; }
+  .mid-pin-label.blue   { color: #90caf9; }
+  .mid-pin-label.yellow { color: #fff59d; }
+  .mid-pin-value {
+    font-size: 1.25rem;
+    font-weight: 900;
+    min-width: 26px;
+    text-align: center;
+  }
+  .mid-pin-controls { display: flex; gap: 4px; }
+  .mid-pin-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 7px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: pointer;
+    line-height: 1;
+    color: #fff;
+    transition: filter .1s;
+  }
+  .mid-pin-btn:active { transform: scale(0.9); }
+  .mid-pin-btn.minus { background: #21262d; color: var(--sub); }
+  .mid-pin-btn.plus.red    { background: var(--red); }
+  .mid-pin-btn.plus.blue   { background: var(--blue); }
+  .mid-pin-btn.plus.yellow { background: var(--yellow-dark); color: #000; }
+
+  /* Robot counters */
+  .robot-label {
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .robot-label.red  { color: #ef9a9a; }
+  .robot-label.blue { color: #90caf9; }
+  .robot-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .robot-count {
+    font-size: 1.8rem;
+    font-weight: 900;
+    min-width: 32px;
+    text-align: center;
+    line-height: 1;
+  }
+  .robot-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    color: #fff;
+    transition: filter .1s;
+  }
+  .robot-btn:active { transform: scale(0.9); }
+  .robot-btn.red  { background: var(--red-dark); }
+  .robot-btn.blue { background: var(--blue-dark); }
+
+  /* Score breakdown */
+  #breakdown {
+    max-width: 780px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .breakdown-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+  .breakdown-card.red  { border-color: var(--red-dark); }
+  .breakdown-card.blue { border-color: var(--blue-dark); }
+  .breakdown-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .breakdown-title.red  { color: var(--red); }
+  .breakdown-title.blue { color: var(--blue); }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    padding: 2px 0;
+    color: var(--sub);
+    border-bottom: 1px solid var(--border);
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row span { color: var(--text); font-weight: 700; }
+
+  @media (max-width: 500px) {
+    #quadrants { grid-template-columns: 1fr 1fr; }
+    .alliance-score .score { font-size: 2.2rem; }
+    #timer { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ HEADER ══ -->
+<div id="header">
+  <div class="alliance-score red">
+    <div class="label">Red Alliance</div>
+    <div class="score" id="red-score">0</div>
+  </div>
+
+  <div id="timer-block">
+    <div id="phase-badge">Pre-Match</div>
+    <div id="timer">2:00</div>
+    <div id="timer-controls">
+      <button class="btn btn-start" id="btn-start" onclick="startTimer()">▶ Start</button>
+      <button class="btn btn-pause" id="btn-pause" onclick="pauseTimer()" style="display:none">⏸ Pause</button>
+      <button class="btn btn-reset" onclick="resetTimer()">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="alliance-score blue">
+    <div class="label">Blue Alliance</div>
+    <div class="score" id="blue-score">0</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ AUTON ══ -->
+<div id="auton-row">
+  <span class="label">Auton Winner:</span>
+  <button class="auton-btn active-none" id="auton-none"   onclick="setAuton('none')">None</button>
+  <button class="auton-btn"             id="auton-red"    onclick="setAuton('red')">Red (+12)</button>
+  <button class="auton-btn"             id="auton-blue"   onclick="setAuton('blue')">Blue (+12)</button>
+  <button class="auton-btn"             id="auton-tie"    onclick="setAuton('tie')">Tie (+6/+6)</button>
+</div>
+
+<!-- ══════════════════════════════════════════════ FIELD MAP ══ -->
+<div id="quadrants">
+
+  <div class="quadrant" id="q0">
+    <div class="quadrant-label">Quadrant 1</div>
+    <button class="toggle-btn toggle-red" id="toggle-0" onclick="cycleToggle(0)">▣ RED TOGGLE</button>
+    <div class="pins-grid">
+      <div class="pin-counter">
+        <div class="pin-label red">Red Halves</div>
+        <div class="pin-value" id="q0-red">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(0,'red',-1)">−</button>
+          <button class="pin-btn plus red" onclick="adjustPin(0,'red',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label blue">Blue Halves</div>
+        <div class="pin-value" id="q0-blue">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(0,'blue',-1)">−</button>
+          <button class="pin-btn plus blue" onclick="adjustPin(0,'blue',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label yellow">Yellow Halves</div>
+        <div class="pin-value" id="q0-yellow">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(0,'yellow',-1)">−</button>
+          <button class="pin-btn plus yellow" onclick="adjustPin(0,'yellow',1)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quadrant" id="q1">
+    <div class="quadrant-label">Quadrant 2</div>
+    <button class="toggle-btn toggle-red" id="toggle-1" onclick="cycleToggle(1)">▣ RED TOGGLE</button>
+    <div class="pins-grid">
+      <div class="pin-counter">
+        <div class="pin-label red">Red Halves</div>
+        <div class="pin-value" id="q1-red">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(1,'red',-1)">−</button>
+          <button class="pin-btn plus red" onclick="adjustPin(1,'red',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label blue">Blue Halves</div>
+        <div class="pin-value" id="q1-blue">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(1,'blue',-1)">−</button>
+          <button class="pin-btn plus blue" onclick="adjustPin(1,'blue',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label yellow">Yellow Halves</div>
+        <div class="pin-value" id="q1-yellow">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(1,'yellow',-1)">−</button>
+          <button class="pin-btn plus yellow" onclick="adjustPin(1,'yellow',1)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quadrant" id="q2">
+    <div class="quadrant-label">Quadrant 3</div>
+    <button class="toggle-btn toggle-red" id="toggle-2" onclick="cycleToggle(2)">▣ RED TOGGLE</button>
+    <div class="pins-grid">
+      <div class="pin-counter">
+        <div class="pin-label red">Red Halves</div>
+        <div class="pin-value" id="q2-red">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(2,'red',-1)">−</button>
+          <button class="pin-btn plus red" onclick="adjustPin(2,'red',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label blue">Blue Halves</div>
+        <div class="pin-value" id="q2-blue">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(2,'blue',-1)">−</button>
+          <button class="pin-btn plus blue" onclick="adjustPin(2,'blue',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label yellow">Yellow Halves</div>
+        <div class="pin-value" id="q2-yellow">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(2,'yellow',-1)">−</button>
+          <button class="pin-btn plus yellow" onclick="adjustPin(2,'yellow',1)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quadrant" id="q3">
+    <div class="quadrant-label">Quadrant 4</div>
+    <button class="toggle-btn toggle-red" id="toggle-3" onclick="cycleToggle(3)">▣ RED TOGGLE</button>
+    <div class="pins-grid">
+      <div class="pin-counter">
+        <div class="pin-label red">Red Halves</div>
+        <div class="pin-value" id="q3-red">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(3,'red',-1)">−</button>
+          <button class="pin-btn plus red" onclick="adjustPin(3,'red',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label blue">Blue Halves</div>
+        <div class="pin-value" id="q3-blue">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(3,'blue',-1)">−</button>
+          <button class="pin-btn plus blue" onclick="adjustPin(3,'blue',1)">+</button>
+        </div>
+      </div>
+      <div class="pin-counter">
+        <div class="pin-label yellow">Yellow Halves</div>
+        <div class="pin-value" id="q3-yellow">0</div>
+        <div class="pin-controls">
+          <button class="pin-btn minus" onclick="adjustPin(3,'yellow',-1)">−</button>
+          <button class="pin-btn plus yellow" onclick="adjustPin(3,'yellow',1)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #quadrants -->
+
+<!-- ══════════════════════════════════════════════ MIDFIELD ══ -->
+<div id="midfield-wrap">
+  <div id="midfield">
+    <div class="quadrant-label">⬡ MIDFIELD GOAL</div>
+    <div id="midfield-inner">
+      <div class="mid-robots-row">
+        <div class="robot-section">
+          <div class="robot-label red">Red Robots in Midfield</div>
+          <div class="robot-counter">
+            <button class="robot-btn red" onclick="adjustRobot('red',-1)">−</button>
+            <div class="robot-count" id="mid-red-robots">0</div>
+            <button class="robot-btn red" onclick="adjustRobot('red',1)">+</button>
+          </div>
+        </div>
+        <div class="mid-pin-col">
+          <div class="mid-pin-row">
+            <div class="mid-pin-label red">Red Halves</div>
+            <div class="mid-pin-value" id="mid-red">0</div>
+            <div class="mid-pin-controls">
+              <button class="mid-pin-btn minus" onclick="adjustMidPin('red',-1)">−</button>
+              <button class="mid-pin-btn plus red" onclick="adjustMidPin('red',1)">+</button>
+            </div>
+          </div>
+          <div class="mid-pin-row">
+            <div class="mid-pin-label blue">Blue Halves</div>
+            <div class="mid-pin-value" id="mid-blue">0</div>
+            <div class="mid-pin-controls">
+              <button class="mid-pin-btn minus" onclick="adjustMidPin('blue',-1)">−</button>
+              <button class="mid-pin-btn plus blue" onclick="adjustMidPin('blue',1)">+</button>
+            </div>
+          </div>
+          <div class="mid-pin-row">
+            <div class="mid-pin-label yellow">Yellow Halves</div>
+            <div class="mid-pin-value" id="mid-yellow">0</div>
+            <div class="mid-pin-controls">
+              <button class="mid-pin-btn minus" onclick="adjustMidPin('yellow',-1)">−</button>
+              <button class="mid-pin-btn plus yellow" onclick="adjustMidPin('yellow',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="robot-section">
+          <div class="robot-label blue">Blue Robots in Midfield</div>
+          <div class="robot-counter">
+            <button class="robot-btn blue" onclick="adjustRobot('blue',-1)">−</button>
+            <div class="robot-count" id="mid-blue-robots">0</div>
+            <button class="robot-btn blue" onclick="adjustRobot('blue',1)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ BREAKDOWN ══ -->
+<div id="breakdown">
+  <div class="breakdown-card red">
+    <div class="breakdown-title red">Red Breakdown</div>
+    <div class="breakdown-row">Auton Bonus <span id="bd-red-auton">0</span></div>
+    <div class="breakdown-row">Alliance Halves (×5) <span id="bd-red-pins">0</span></div>
+    <div class="breakdown-row">Yellow Halves (×10) <span id="bd-red-yellow">0</span></div>
+    <div class="breakdown-row">Robots in Midfield (×8) <span id="bd-red-robots">0</span></div>
+  </div>
+  <div class="breakdown-card blue">
+    <div class="breakdown-title blue">Blue Breakdown</div>
+    <div class="breakdown-row">Auton Bonus <span id="bd-blue-auton">0</span></div>
+    <div class="breakdown-row">Alliance Halves (×5) <span id="bd-blue-pins">0</span></div>
+    <div class="breakdown-row">Yellow Halves (×10) <span id="bd-blue-yellow">0</span></div>
+    <div class="breakdown-row">Robots in Midfield (×8) <span id="bd-blue-robots">0</span></div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+const state = {
+  autonWinner: 'none',
+  // toggles[i]: 'red' | 'blue' | 'yellow'
+  toggles: ['red', 'red', 'red', 'red'],
+  // quadrants[i]: { red, blue, yellow }
+  quadrants: [
+    {red:0, blue:0, yellow:0},
+    {red:0, blue:0, yellow:0},
+    {red:0, blue:0, yellow:0},
+    {red:0, blue:0, yellow:0},
+  ],
+  midfield: {red:0, blue:0, yellow:0},
+  redRobots:  0,
+  blueRobots: 0,
+};
+
+// ── Timer ────────────────────────────────────────────────────────────────────
+const TOTAL    = 120; // 2:00 total
+const AUTO_END = 105; // 15s auto → remaining = 105
+
+let remaining = TOTAL;
+let running   = false;
+let interval  = null;
+let autoPhaseEnded = false;
+
+function startTimer() {
+  if (running) return;
+  running = true;
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-pause').style.display = '';
+  interval = setInterval(tick, 1000);
+}
+
+function pauseTimer() {
+  running = false;
+  clearInterval(interval);
+  document.getElementById('btn-start').style.display = '';
+  document.getElementById('btn-pause').style.display = 'none';
+}
+
+function resetTimer() {
+  pauseTimer();
+  remaining = TOTAL;
+  autoPhaseEnded = false;
+  document.getElementById('btn-start').style.display = '';
+  document.getElementById('btn-pause').style.display = 'none';
+  renderTimer();
+}
+
+function tick() {
+  if (remaining <= 0) {
+    clearInterval(interval);
+    running = false;
+    document.getElementById('btn-start').style.display = '';
+    document.getElementById('btn-pause').style.display = 'none';
+    renderTimer();
+    return;
+  }
+  remaining--;
+
+  // Detect autonomous period ending (at 1:45 remaining = 105s)
+  if (!autoPhaseEnded && remaining === AUTO_END) {
+    autoPhaseEnded = true;
+  }
+
+  renderTimer();
+}
+
+function renderTimer() {
+  const el    = document.getElementById('timer');
+  const badge = document.getElementById('phase-badge');
+  const mins  = Math.floor(remaining / 60);
+  const secs  = remaining % 60;
+  el.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+
+  const isAuto   = remaining > AUTO_END;
+  const isDone   = remaining === 0;
+  const isUrgent = remaining <= 30 && remaining > 0;
+
+  el.classList.toggle('urgent', isUrgent);
+
+  if (isDone) {
+    badge.className = 'phase-badge';
+    badge.textContent = 'Match Over';
+  } else if (isAuto) {
+    badge.className = 'phase-badge auto';
+    badge.textContent = 'Autonomous';
+  } else {
+    badge.className = 'phase-badge driver';
+    badge.textContent = 'Driver Control';
+  }
+}
+
+// ── Autonomous winner ────────────────────────────────────────────────────────
+function setAuton(val) {
+  state.autonWinner = val;
+  ['none','red','blue','tie'].forEach(v => {
+    const btn = document.getElementById('auton-' + v);
+    btn.className = 'auton-btn' + (v === val ? ' active-' + v : '');
+  });
+  recalculate();
+}
+
+// ── Toggle cycling ───────────────────────────────────────────────────────────
+const TOGGLE_CYCLE = ['red', 'blue', 'yellow'];
+const TOGGLE_LABELS = {
+  red:    '▣ RED TOGGLE',
+  blue:   '▣ BLUE TOGGLE',
+  yellow: '▣ NEUTRAL (Yellow)',
+};
+const TOGGLE_CLASSES = {
+  red:    'toggle-btn toggle-red',
+  blue:   'toggle-btn toggle-blue',
+  yellow: 'toggle-btn toggle-yellow',
+};
+
+function cycleToggle(qi) {
+  const cur = state.toggles[qi];
+  const next = TOGGLE_CYCLE[(TOGGLE_CYCLE.indexOf(cur) + 1) % 3];
+  state.toggles[qi] = next;
+  const btn = document.getElementById('toggle-' + qi);
+  btn.textContent = TOGGLE_LABELS[next];
+  btn.className   = TOGGLE_CLASSES[next];
+  recalculate();
+}
+
+// ── Pin adjustments ──────────────────────────────────────────────────────────
+function adjustPin(qi, color, delta) {
+  state.quadrants[qi][color] = Math.max(0, state.quadrants[qi][color] + delta);
+  document.getElementById(`q${qi}-${color}`).textContent = state.quadrants[qi][color];
+  recalculate();
+}
+
+function adjustMidPin(color, delta) {
+  state.midfield[color] = Math.max(0, state.midfield[color] + delta);
+  document.getElementById(`mid-${color}`).textContent = state.midfield[color];
+  recalculate();
+}
+
+function adjustRobot(alliance, delta) {
+  if (alliance === 'red') {
+    state.redRobots  = Math.max(0, Math.min(2, state.redRobots  + delta));
+    document.getElementById('mid-red-robots').textContent  = state.redRobots;
+  } else {
+    state.blueRobots = Math.max(0, Math.min(2, state.blueRobots + delta));
+    document.getElementById('mid-blue-robots').textContent = state.blueRobots;
+  }
+  recalculate();
+}
+
+// ── Score calculation ────────────────────────────────────────────────────────
+function recalculate() {
+  let redScore  = 0;
+  let blueScore = 0;
+
+  // Autonomous bonus
+  let redAuton = 0, blueAuton = 0;
+  if (state.autonWinner === 'red')  { redAuton  = 12; }
+  if (state.autonWinner === 'blue') { blueAuton = 12; }
+  if (state.autonWinner === 'tie')  { redAuton  = 6; blueAuton = 6; }
+  redScore  += redAuton;
+  blueScore += blueAuton;
+
+  // Alliance-colored pins (5 pts each, all locations)
+  let totalRedPins  = state.midfield.red;
+  let totalBluePins = state.midfield.blue;
+  state.quadrants.forEach(q => { totalRedPins += q.red; totalBluePins += q.blue; });
+  const redPinPts  = totalRedPins  * 5;
+  const bluePinPts = totalBluePins * 5;
+  redScore  += redPinPts;
+  blueScore += bluePinPts;
+
+  // Yellow pins in quadrants (10 pts, owned by toggle alliance)
+  let redYellowPts = 0, blueYellowPts = 0;
+  state.quadrants.forEach((q, i) => {
+    const tog = state.toggles[i];
+    if (tog === 'red')  redYellowPts  += q.yellow * 10;
+    if (tog === 'blue') blueYellowPts += q.yellow * 10;
+    // yellow toggle → 0
+  });
+
+  // Yellow pins in midfield (10 pts, owned by alliance with more robots)
+  let midYellowRedPts = 0, midYellowBluePts = 0;
+  if (state.redRobots > state.blueRobots)  midYellowRedPts  = state.midfield.yellow * 10;
+  if (state.blueRobots > state.redRobots)  midYellowBluePts = state.midfield.yellow * 10;
+  // tied → 0
+
+  redYellowPts  += midYellowRedPts;
+  blueYellowPts += midYellowBluePts;
+
+  redScore  += redYellowPts;
+  blueScore += blueYellowPts;
+
+  // Robots in midfield (8 pts each)
+  const redRobotPts  = state.redRobots  * 8;
+  const blueRobotPts = state.blueRobots * 8;
+  redScore  += redRobotPts;
+  blueScore += blueRobotPts;
+
+  // Update DOM
+  document.getElementById('red-score').textContent  = redScore;
+  document.getElementById('blue-score').textContent = blueScore;
+
+  document.getElementById('bd-red-auton').textContent    = redAuton;
+  document.getElementById('bd-red-pins').textContent     = redPinPts;
+  document.getElementById('bd-red-yellow').textContent   = redYellowPts;
+  document.getElementById('bd-red-robots').textContent   = redRobotPts;
+  document.getElementById('bd-blue-auton').textContent   = blueAuton;
+  document.getElementById('bd-blue-pins').textContent    = bluePinPts;
+  document.getElementById('bd-blue-yellow').textContent  = blueYellowPts;
+  document.getElementById('bd-blue-robots').textContent  = blueRobotPts;
+}
+
+// Init
+renderTimer();
+recalculate();
+</script>
+</body>
+</html>
