@@ -355,6 +355,43 @@
   .breakdown-row:last-child { border-bottom: none; }
   .breakdown-row span { color: var(--text); font-weight: 700; }
 
+  /* Local score history */
+  #history {
+    max-width: 780px;
+    margin: 10px auto 0;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+  #history-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 6px;
+  }
+  #history-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  #history-list li {
+    font-size: 0.78rem;
+    color: var(--sub);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 3px;
+  }
+  #history-list li:last-child { border-bottom: none; }
+  #history-list .scoreline { color: var(--text); font-weight: 700; }
+
   @media (max-width: 500px) {
     #quadrants { grid-template-columns: 1fr 1fr; }
     .alliance-score .score { font-size: 2.2rem; }
@@ -596,6 +633,11 @@
   </div>
 </div>
 
+<div id="history">
+  <div id="history-title">Recent Matches (Local Only)</div>
+  <ul id="history-list"></ul>
+</div>
+
 <script>
 // ── State ────────────────────────────────────────────────────────────────────
 const state = {
@@ -613,6 +655,9 @@ const state = {
   redRobots:  0,
   blueRobots: 0,
 };
+
+const SCORE_HISTORY_KEY = 'vex-live-scorer-history';
+const SCORE_HISTORY_LIMIT = 20;
 
 // ── Timer ────────────────────────────────────────────────────────────────────
 const TOTAL    = 120; // 2:00 total
@@ -639,6 +684,8 @@ function pauseTimer() {
 }
 
 function resetTimer() {
+  saveCurrentScore();
+  resetScoringState();
   pauseTimer();
   remaining = TOTAL;
   autoPhaseEnded = false;
@@ -689,6 +736,95 @@ function renderTimer() {
     badge.className = 'phase-badge driver';
     badge.textContent = 'Driver Control';
   }
+}
+
+function resetScoringState() {
+  state.autonWinner = 'none';
+  state.toggles = ['red', 'red', 'red', 'red'];
+  state.quadrants = [
+    {red:0, blue:0, yellow:0},
+    {red:0, blue:0, yellow:0},
+    {red:0, blue:0, yellow:0},
+    {red:0, blue:0, yellow:0},
+  ];
+  state.midfield = {red:0, blue:0, yellow:0};
+  state.redRobots = 0;
+  state.blueRobots = 0;
+
+  ['none', 'red', 'blue', 'tie'].forEach(v => {
+    const btn = document.getElementById('auton-' + v);
+    btn.className = 'auton-btn' + (v === 'none' ? ' active-none' : '');
+  });
+
+  for (let i = 0; i < 4; i++) {
+    const toggleBtn = document.getElementById('toggle-' + i);
+    toggleBtn.textContent = TOGGLE_LABELS.red;
+    toggleBtn.className = TOGGLE_CLASSES.red;
+
+    ['red', 'blue', 'yellow'].forEach(color => {
+      document.getElementById(`q${i}-${color}`).textContent = '0';
+    });
+  }
+
+  ['red', 'blue', 'yellow'].forEach(color => {
+    document.getElementById(`mid-${color}`).textContent = '0';
+  });
+
+  document.getElementById('mid-red-robots').textContent = '0';
+  document.getElementById('mid-blue-robots').textContent = '0';
+
+  recalculate();
+}
+
+function readScoreHistory() {
+  try {
+    const raw = localStorage.getItem(SCORE_HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function hasAnyScoringActivity() {
+  if (state.autonWinner !== 'none') return true;
+  if (state.redRobots > 0 || state.blueRobots > 0) return true;
+  if (state.midfield.red > 0 || state.midfield.blue > 0 || state.midfield.yellow > 0) return true;
+
+  return state.quadrants.some(q => q.red > 0 || q.blue > 0 || q.yellow > 0);
+}
+
+function saveCurrentScore() {
+  if (!hasAnyScoringActivity()) return;
+
+  const red = Number(document.getElementById('red-score').textContent || 0);
+  const blue = Number(document.getElementById('blue-score').textContent || 0);
+
+  const history = readScoreHistory();
+  history.unshift({
+    timestamp: new Date().toISOString(),
+    red,
+    blue,
+  });
+
+  const trimmed = history.slice(0, SCORE_HISTORY_LIMIT);
+  localStorage.setItem(SCORE_HISTORY_KEY, JSON.stringify(trimmed));
+  renderScoreHistory();
+}
+
+function renderScoreHistory() {
+  const list = document.getElementById('history-list');
+  const history = readScoreHistory();
+
+  if (history.length === 0) {
+    list.innerHTML = '<li><span>No saved scores yet.</span><span class="scoreline">0 entries</span></li>';
+    return;
+  }
+
+  list.innerHTML = history.map(item => {
+    const when = new Date(item.timestamp).toLocaleString();
+    return `<li><span>${when}</span><span class="scoreline">RED ${item.red} - ${item.blue} BLUE</span></li>`;
+  }).join('');
 }
 
 // ── Autonomous winner ────────────────────────────────────────────────────────
@@ -814,6 +950,7 @@ function recalculate() {
 // Init
 renderTimer();
 recalculate();
+renderScoreHistory();
 </script>
 </body>
 </html>
