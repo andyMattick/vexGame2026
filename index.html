@@ -29,6 +29,482 @@
     user-select: none;
   }
 
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── Hub Screen ── */
+  #hub-screen.active {
+    min-height: calc(100vh - 16px);
+    display: grid;
+    place-items: center;
+    background: radial-gradient(ellipse at 30% 40%, #1a0a0a 0%, #0a0f1a 55%, #0d1117 100%);
+  }
+  .hub-wrap {
+    width: min(860px, 100%);
+    background: linear-gradient(145deg, #1c1018 0%, #0f1824 100%);
+    border: 2px solid #3d2a3d;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 20px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(183,28,28,0.12);
+  }
+  .hub-kicker {
+    font-size: 0.72rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #e57373;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .hub-title {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 900;
+    margin-bottom: 18px;
+    background: linear-gradient(90deg, #ef5350, #64b5f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hub-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .hub-card {
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hub-card.v5 {
+    background: linear-gradient(145deg, #2a0f0f 0%, #1a1020 100%);
+    border: 2px solid #7f1d1d;
+    box-shadow: 0 6px 24px rgba(183,28,28,0.25);
+  }
+  .hub-card.iq {
+    background: linear-gradient(145deg, #0a1628 0%, #111d2f 100%);
+    border: 2px solid #0d47a1;
+    box-shadow: 0 6px 24px rgba(13,71,161,0.25);
+  }
+  .hub-card h2 {
+    font-size: 1.1rem;
+    font-weight: 900;
+  }
+  .hub-card.v5 h2 { color: #ef9a9a; }
+  .hub-card.iq h2  { color: #90caf9; }
+  .hub-card p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    flex: 1;
+  }
+  .hub-card.v5 p { color: #c8a0a0; }
+  .hub-card.iq p  { color: #8eb8d8; }
+  .hub-btn {
+    margin-top: 4px;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .hub-btn:hover { filter: brightness(1.15); }
+  .hub-btn.override {
+    background: linear-gradient(90deg, #c62828, #6a1a6a);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(198,40,40,0.4);
+  }
+  .hub-btn.levelup {
+    background: linear-gradient(90deg, #0d47a1, #1565c0);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(13,71,161,0.45);
+  }
+  .hub-chip {
+    width: fit-content;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-weight: 800;
+    background: #2a3444;
+    color: #9fb4d3;
+  }
+
+  /* ── Screen Header ── */
+  .screen-bar {
+    max-width: 780px;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .screen-title {
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sub);
+    font-weight: 800;
+  }
+
+  /* ── VIQRC Level Up panel ── */
+  #iq-screen {
+    background:
+      radial-gradient(circle at 8% 12%, rgba(229, 57, 53, 0.18), transparent 34%),
+      radial-gradient(circle at 92% 88%, rgba(30, 136, 229, 0.2), transparent 36%),
+      linear-gradient(180deg, #0c121a 0%, #0b1118 100%);
+    border-radius: 14px;
+    padding-bottom: 10px;
+  }
+  .iq-panel {
+    max-width: 780px;
+    margin: 0 auto;
+    background: linear-gradient(160deg, #172335 0%, #111a28 100%);
+    border: 2px solid #2b405f;
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  }
+  .iq-title {
+    font-size: 0.75rem;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: #b8d2f3;
+    margin-bottom: 8px;
+    font-weight: 900;
+  }
+  .iq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .iq-row {
+    font-size: 0.85rem;
+    color: var(--sub);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    background: #111821;
+  }
+  .iq-row strong { color: var(--text); }
+  .iq-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .iq-header {
+    max-width: 780px;
+    margin: 0 auto 10px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+  .iq-score-card {
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: center;
+    font-weight: 900;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+  }
+  .iq-score-card.red {
+    background: linear-gradient(135deg, #d32f2f 0%, #7f1d1d 100%);
+  }
+  .iq-score-card.blue {
+    background: linear-gradient(135deg, #1976d2 0%, #0b2d63 100%);
+  }
+  .iq-score-label {
+    font-size: 0.7rem;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .iq-score-value {
+    font-size: 2.3rem;
+    line-height: 1;
+  }
+  .iq-timer-wrap {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+  }
+  #iq-phase {
+    font-size: 0.68rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    background: #21262d;
+    border-radius: 999px;
+    padding: 3px 10px;
+    color: var(--sub);
+    font-weight: 800;
+  }
+  #iq-phase.skills { background: #0d47a1; color: #fff; }
+  #iq-phase.teamwork { background: #343941; color: #e6edf3; }
+  #iq-phase.ended { background: #238636; color: #fff; }
+  #iq-timer {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .iq-mode-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .mode-btn {
+    border: 2px solid #395170;
+    background: linear-gradient(180deg, #1a2a40 0%, #152236 100%);
+    color: #b2c6df;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .mode-btn.active {
+    border-color: #8ec5ff;
+    color: #ffffff;
+    background: linear-gradient(90deg, #b71c1c 0%, #0d47a1 100%);
+  }
+  .iq-scorepad {
+    margin-top: 10px;
+    display: grid;
+    gap: 8px;
+  }
+  .iq-score-row {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    background: #111821;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+  .iq-row-label {
+    font-size: 0.72rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-weight: 900;
+    min-width: 68px;
+  }
+  .iq-row-label.red { color: #ef9a9a; }
+  .iq-row-label.blue { color: #90caf9; }
+  .iq-row-label.yellow { color: #fff59d; }
+  .iq-row-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .iq-mini-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    cursor: pointer;
+    color: #fff;
+  }
+  .iq-mini-btn.red { background: #b71c1c; }
+  .iq-mini-btn.blue { background: #0d47a1; }
+  .iq-mini-btn.yellow { background: #f9a825; color: #111; }
+  .iq-mini-btn.undo { background: #343941; color: #d0d7de; }
+  .iq-tiebreakers {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--sub);
+    line-height: 1.4;
+  }
+  .iq-count-grid {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .iq-count-card {
+    background: linear-gradient(180deg, #122033 0%, #101b2b 100%);
+    border: 1px solid #2f4768;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .iq-count-card:nth-child(1) { border-left: 4px solid #fbc02d; }
+  .iq-count-card:nth-child(2) { border-left: 4px solid #64b5f6; }
+  .iq-count-card:nth-child(3) { border-left: 4px solid #4fc3f7; }
+  .iq-count-card:nth-child(4) { border-left: 4px solid #42a5f5; }
+  .iq-count-card:nth-child(5) { border-left: 4px solid #ffd54f; }
+  .iq-count-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    color: var(--sub);
+    margin-bottom: 8px;
+  }
+  .iq-count-head strong {
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+  .iq-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .iq-stepper-value {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 1.2rem;
+  }
+  .iq-subtotal {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--sub);
+  }
+  .iq-subtotal strong {
+    color: var(--text);
+  }
+  .iq-final {
+    margin-top: 10px;
+    border: 2px solid #36557d;
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    background: linear-gradient(90deg, #7f1d1d 0%, #0b2d63 100%);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+  }
+  .iq-final .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--sub);
+  }
+  .iq-final .value {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  .iq-history {
+    margin-top: 10px;
+    background: linear-gradient(180deg, #111d2f 0%, #101a29 100%);
+    border: 1px solid #2f4768;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .iq-history-title {
+    font-size: 0.72rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 6px;
+    font-weight: 800;
+  }
+  #iq-history-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  #iq-history-list li {
+    font-size: 0.78rem;
+    color: var(--sub);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 3px;
+  }
+  #iq-history-list li:last-child { border-bottom: none; }
+  #iq-history-list .scoreline { color: var(--text); font-weight: 700; }
+
+  /* ── Shared Auton Helper Timer ── */
+  .auton-helper {
+    max-width: 780px;
+    margin: 0 auto 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .auton-panel {
+    display: none;
+    background: #111821;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+  }
+  .auton-panel.open { display: block; }
+  .auton-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .auton-big {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .auton-big.urgent { color: var(--red); }
+  .auton-controls {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .auton-settings {
+    margin-top: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    color: var(--sub);
+    font-size: 0.8rem;
+  }
+  .auton-input {
+    width: 82px;
+    background: #0d1117;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+  .auton-banner {
+    margin-top: 8px;
+    display: none;
+    border: 1px solid #3d5a80;
+    background: #18253a;
+    color: #dbeafe;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
+  .auton-banner.show { display: block; }
+  .tap-start {
+    margin-top: 8px;
+    display: none;
+    border: 1px dashed #3d5a80;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    color: #9fb4d3;
+    font-size: 0.85rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .tap-start.show { display: block; }
+
   /* ── Header / Scoreboard ── */
   #header {
     display: grid;
@@ -396,12 +872,42 @@
     #quadrants { grid-template-columns: 1fr 1fr; }
     .alliance-score .score { font-size: 2.2rem; }
     #timer { font-size: 2.2rem; }
+    .hub-grid { grid-template-columns: 1fr; }
+    .iq-grid { grid-template-columns: 1fr; }
+    .iq-header { grid-template-columns: 1fr; }
+    .iq-timer-wrap { order: -1; }
+    .iq-count-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════ HEADER ══ -->
+<div id="hub-screen" class="screen active">
+  <div class="hub-wrap">
+    <div class="hub-kicker">Competition Hub</div>
+    <div class="hub-title">Choose a Scoring Mode</div>
+    <div class="hub-grid">
+      <section class="hub-card v5">
+        <h2>VEX V5 Override</h2>
+        <p>Live match scoring with autonomous bonus, quadrant toggles, midfield control, and local score history.</p>
+        <button class="hub-btn override" onclick="showScreen('override')">Open V5 Override</button>
+      </section>
+      <section class="hub-card iq">
+        <h2>VEX IQ Level Up</h2>
+        <p>Count-based scorer for VEX IQ Level Up — floors, stacks, and tower levels with match history.</p>
+        <button class="hub-btn levelup" onclick="showScreen('iq')">Open Level Up Scorer</button>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="override-screen" class="screen">
+
+<div class="screen-bar">
+  <button class="btn btn-reset" onclick="showScreen('hub')">← Hub</button>
+  <div class="screen-title">VEX V5 Override</div>
+</div>
+
 <div id="header">
   <div class="alliance-score red">
     <div class="label">Red Alliance</div>
@@ -421,6 +927,27 @@
   <div class="alliance-score blue">
     <div class="label">Blue Alliance</div>
     <div class="score" id="blue-score">0</div>
+  </div>
+</div>
+
+<div class="auton-helper">
+  <button class="btn btn-reset" onclick="toggleAutonPanel('override')">Auton Timer</button>
+  <div id="auton-panel-override" class="auton-panel">
+    <div class="auton-top">
+      <div id="auton-time-override" class="auton-big">1:00</div>
+      <div class="auton-controls">
+        <button class="btn btn-start" onclick="autonTimers.override.start()">Start</button>
+        <button class="btn btn-pause" onclick="autonTimers.override.pause()">Pause/Resume</button>
+        <button class="btn btn-reset" onclick="autonTimers.override.reset()">Reset</button>
+      </div>
+    </div>
+    <div class="auton-settings">
+      <label>Duration (30-90s): <input id="auton-duration-override" class="auton-input" type="number" min="30" max="90" step="1"></label>
+      <button class="btn btn-reset" onclick="autonTimers.override.applyDurationSetting()">Apply</button>
+      <label><input id="auton-tap-override" type="checkbox"> Tap anywhere to start</label>
+    </div>
+    <div id="auton-banner-override" class="auton-banner">Auton Complete</div>
+    <div id="auton-tapzone-override" class="tap-start">Tap anywhere in this box to start/restart autonomous timer</div>
   </div>
 </div>
 
@@ -638,6 +1165,135 @@
   <ul id="history-list"></ul>
 </div>
 
+</div>
+
+<div id="iq-screen" class="screen">
+  <div class="screen-bar">
+    <button class="btn btn-reset" onclick="showScreen('hub')">← Hub</button>
+    <div class="screen-title">VEX IQ Level Up</div>
+  </div>
+
+  <div class="iq-header">
+    <div class="iq-score-card red">
+      <div class="iq-score-label">Live Total</div>
+      <div class="iq-score-value" id="iq-total-score">0</div>
+    </div>
+    <div class="iq-timer-wrap">
+      <div id="iq-phase" class="teamwork">Teamwork Match</div>
+      <div id="iq-note" class="screen-title" style="letter-spacing:1px;">Post-match visual count scoring</div>
+    </div>
+    <div class="iq-score-card blue">
+      <div class="iq-score-label">Bean Bags Counted</div>
+      <div class="iq-score-value" id="iq-total-bags">0</div>
+    </div>
+  </div>
+
+  <div class="iq-panel">
+    <div class="iq-title">Official Level Up Scoring Inputs</div>
+
+    <div class="iq-mode-row">
+      <button id="iq-mode-teamwork" class="mode-btn active" onclick="setIqMode('TEAMWORK')">Teamwork Match</button>
+      <button id="iq-mode-driving" class="mode-btn" onclick="setIqMode('DRIVING_SKILLS')">Driving Skills</button>
+      <button id="iq-mode-auton" class="mode-btn" onclick="setIqMode('AUTON_SKILLS')">Autonomous Skills</button>
+    </div>
+
+    <div class="iq-count-grid">
+      <div class="iq-count-card">
+        <div class="iq-count-head"><span>Floor Goal</span><strong>x1</strong></div>
+        <div class="iq-stepper">
+          <button class="btn btn-reset" onclick="adjustIqCount('floor',-1)">−</button>
+          <div class="iq-stepper-value" id="iq-count-floor">0</div>
+          <button class="btn btn-start" onclick="adjustIqCount('floor',1)">+</button>
+        </div>
+        <div class="iq-subtotal">Subtotal: <strong id="iq-sub-floor">0</strong></div>
+      </div>
+
+      <div class="iq-count-card">
+        <div class="iq-count-head"><span>L1 Goal</span><strong>x3</strong></div>
+        <div class="iq-stepper">
+          <button class="btn btn-reset" onclick="adjustIqCount('l1',-1)">−</button>
+          <div class="iq-stepper-value" id="iq-count-l1">0</div>
+          <button class="btn btn-start" onclick="adjustIqCount('l1',1)">+</button>
+        </div>
+        <div class="iq-subtotal">Subtotal: <strong id="iq-sub-l1">0</strong></div>
+      </div>
+
+      <div class="iq-count-card">
+        <div class="iq-count-head"><span>L2 Goal</span><strong>x6</strong></div>
+        <div class="iq-stepper">
+          <button class="btn btn-reset" onclick="adjustIqCount('l2',-1)">−</button>
+          <div class="iq-stepper-value" id="iq-count-l2">0</div>
+          <button class="btn btn-start" onclick="adjustIqCount('l2',1)">+</button>
+        </div>
+        <div class="iq-subtotal">Subtotal: <strong id="iq-sub-l2">0</strong></div>
+      </div>
+
+      <div class="iq-count-card">
+        <div class="iq-count-head"><span>L3 Goal</span><strong>x12</strong></div>
+        <div class="iq-stepper">
+          <button class="btn btn-reset" onclick="adjustIqCount('l3',-1)">−</button>
+          <div class="iq-stepper-value" id="iq-count-l3">0</div>
+          <button class="btn btn-start" onclick="adjustIqCount('l3',1)">+</button>
+        </div>
+        <div class="iq-subtotal">Subtotal: <strong id="iq-sub-l3">0</strong></div>
+      </div>
+
+      <div class="iq-count-card">
+        <div class="iq-count-head"><span>L4 Goal</span><strong>x16</strong></div>
+        <div class="iq-stepper">
+          <button class="btn btn-reset" onclick="adjustIqCount('l4',-1)">−</button>
+          <div class="iq-stepper-value" id="iq-count-l4">0</div>
+          <button class="btn btn-start" onclick="adjustIqCount('l4',1)">+</button>
+        </div>
+        <div class="iq-subtotal">Subtotal: <strong id="iq-sub-l4">0</strong></div>
+      </div>
+
+      <div class="iq-count-card">
+        <div class="iq-count-head"><span>Summary</span><strong>Live</strong></div>
+        <div class="iq-row">Scoring is purely count-based for scored Bean Bags.</div>
+        <div class="iq-subtotal">Formula: <strong>F*1 + L1*3 + L2*6 + L3*12 + L4*16</strong></div>
+      </div>
+    </div>
+
+    <div class="iq-final">
+      <div class="label">Final Score</div>
+      <div class="value" id="iq-final-score">0</div>
+    </div>
+
+    <div class="iq-actions">
+      <button id="iq-reset-btn" class="btn btn-reset" onclick="resetIqCounts()">Reset Counts</button>
+      <button class="btn btn-pause" onclick="saveCurrentIqScore(true)">Save Match</button>
+      <button class="btn btn-start" onclick="runIqDemo()">Load Demo</button>
+    </div>
+
+    <div class="iq-history">
+      <div class="iq-history-title">Recent Level Up Matches (Local Only)</div>
+      <ul id="iq-history-list"></ul>
+    </div>
+
+    <div class="auton-helper" style="margin-top:12px;">
+      <button class="btn btn-reset" onclick="toggleAutonPanel('iq')">Auton Timer</button>
+      <div id="auton-panel-iq" class="auton-panel">
+        <div class="auton-top">
+          <div id="auton-time-iq" class="auton-big">1:00</div>
+          <div class="auton-controls">
+            <button class="btn btn-start" onclick="autonTimers.iq.start()">Start</button>
+            <button class="btn btn-pause" onclick="autonTimers.iq.pause()">Pause/Resume</button>
+            <button class="btn btn-reset" onclick="autonTimers.iq.reset()">Reset</button>
+          </div>
+        </div>
+        <div class="auton-settings">
+          <label>Duration (30-90s): <input id="auton-duration-iq" class="auton-input" type="number" min="30" max="90" step="1"></label>
+          <button class="btn btn-reset" onclick="autonTimers.iq.applyDurationSetting()">Apply</button>
+          <label><input id="auton-tap-iq" type="checkbox"> Tap anywhere to start</label>
+        </div>
+        <div id="auton-banner-iq" class="auton-banner">Auton Complete</div>
+        <div id="auton-tapzone-iq" class="tap-start">Tap anywhere in this box to start/restart autonomous timer</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── State ────────────────────────────────────────────────────────────────────
 const state = {
@@ -658,6 +1314,8 @@ const state = {
 
 const SCORE_HISTORY_KEY = 'vex-live-scorer-history';
 const SCORE_HISTORY_LIMIT = 20;
+const IQ_HISTORY_KEY = 'vex-iq-levelup-history';
+const IQ_HISTORY_LIMIT = 20;
 
 // ── Timer ────────────────────────────────────────────────────────────────────
 const TOTAL    = 120; // 2:00 total
@@ -667,6 +1325,459 @@ let remaining = TOTAL;
 let running   = false;
 let interval  = null;
 let autoPhaseEnded = false;
+
+// ── VIQRC Level Up (official count-based scorer) ───────────────────────────
+const IQ_POINTS = {
+  floor: 1,
+  l1: 3,
+  l2: 6,
+  l3: 12,
+  l4: 16,
+};
+
+const iqState = {
+  matchType: 'TEAMWORK',
+  counts: {
+    floor: 0,
+    l1: 0,
+    l2: 0,
+    l3: 0,
+    l4: 0,
+  },
+};
+
+function computeLevelUpScore(s) {
+  return (
+    s.floor * IQ_POINTS.floor +
+    s.l1 * IQ_POINTS.l1 +
+    s.l2 * IQ_POINTS.l2 +
+    s.l3 * IQ_POINTS.l3 +
+    s.l4 * IQ_POINTS.l4
+  );
+}
+
+function renderIqScorer() {
+  const keys = ['floor', 'l1', 'l2', 'l3', 'l4'];
+  let bagTotal = 0;
+
+  keys.forEach(key => {
+    const count = iqState.counts[key];
+    const subtotal = count * IQ_POINTS[key];
+    bagTotal += count;
+
+    const countEl = document.getElementById(`iq-count-${key}`);
+    const subEl = document.getElementById(`iq-sub-${key}`);
+    if (countEl) countEl.textContent = String(count);
+    if (subEl) subEl.textContent = String(subtotal);
+  });
+
+  const score = computeLevelUpScore(iqState.counts);
+  const scoreEl = document.getElementById('iq-final-score');
+  const totalEl = document.getElementById('iq-total-score');
+  const bagsEl = document.getElementById('iq-total-bags');
+  const phaseEl = document.getElementById('iq-phase');
+
+  if (scoreEl) scoreEl.textContent = String(score);
+  if (totalEl) totalEl.textContent = String(score);
+  if (bagsEl) bagsEl.textContent = String(bagTotal);
+  if (phaseEl) {
+    phaseEl.textContent =
+      iqState.matchType === 'TEAMWORK' ? 'Teamwork Match' :
+      iqState.matchType === 'DRIVING_SKILLS' ? 'Driving Skills' : 'Autonomous Skills';
+    phaseEl.className = iqState.matchType === 'AUTON_SKILLS' ? 'skills' : 'teamwork';
+    phaseEl.id = 'iq-phase';
+  }
+
+  const teamworkBtn = document.getElementById('iq-mode-teamwork');
+  const drivingBtn = document.getElementById('iq-mode-driving');
+  const autonBtn = document.getElementById('iq-mode-auton');
+  if (teamworkBtn) teamworkBtn.classList.toggle('active', iqState.matchType === 'TEAMWORK');
+  if (drivingBtn) drivingBtn.classList.toggle('active', iqState.matchType === 'DRIVING_SKILLS');
+  if (autonBtn) autonBtn.classList.toggle('active', iqState.matchType === 'AUTON_SKILLS');
+}
+
+function setIqMode(mode) {
+  iqState.matchType = mode;
+  renderIqScorer();
+}
+
+function adjustIqCount(key, delta) {
+  if (!(key in iqState.counts)) return;
+  iqState.counts[key] = Math.max(0, iqState.counts[key] + delta);
+  renderIqScorer();
+}
+
+function resetIqCounts() {
+  saveCurrentIqScore();
+
+  iqState.counts.floor = 0;
+  iqState.counts.l1 = 0;
+  iqState.counts.l2 = 0;
+  iqState.counts.l3 = 0;
+  iqState.counts.l4 = 0;
+
+  // Hard-set visible values first, then run normal renderer.
+  ['floor', 'l1', 'l2', 'l3', 'l4'].forEach(key => {
+    const countEl = document.getElementById(`iq-count-${key}`);
+    const subEl = document.getElementById(`iq-sub-${key}`);
+    if (countEl) countEl.textContent = '0';
+    if (subEl) subEl.textContent = '0';
+  });
+  const finalScoreEl = document.getElementById('iq-final-score');
+  const totalScoreEl = document.getElementById('iq-total-score');
+  const totalBagsEl = document.getElementById('iq-total-bags');
+  if (finalScoreEl) finalScoreEl.textContent = '0';
+  if (totalScoreEl) totalScoreEl.textContent = '0';
+  if (totalBagsEl) totalBagsEl.textContent = '0';
+
+  renderIqScorer();
+}
+
+function runIqDemo() {
+  iqState.counts.floor = 4;
+  iqState.counts.l1 = 3;
+  iqState.counts.l2 = 2;
+  iqState.counts.l3 = 1;
+  iqState.counts.l4 = 1;
+  renderIqScorer();
+}
+
+function readIqHistory() {
+  try {
+    const raw = localStorage.getItem(IQ_HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function hasAnyIqScoringActivity() {
+  return Object.values(iqState.counts).some(v => Number(v) > 0);
+}
+
+function saveCurrentIqScore(force = false) {
+  if (!force && !hasAnyIqScoringActivity()) return;
+
+  const score = computeLevelUpScore(iqState.counts);
+  const history = readIqHistory();
+  history.unshift({
+    timestamp: new Date().toISOString(),
+    mode: iqState.matchType,
+    score,
+    counts: {
+      floor: iqState.counts.floor,
+      l1: iqState.counts.l1,
+      l2: iqState.counts.l2,
+      l3: iqState.counts.l3,
+      l4: iqState.counts.l4,
+    },
+  });
+
+  const trimmed = history.slice(0, IQ_HISTORY_LIMIT);
+  localStorage.setItem(IQ_HISTORY_KEY, JSON.stringify(trimmed));
+  renderIqHistory();
+}
+
+function renderIqHistory() {
+  const list = document.getElementById('iq-history-list');
+  if (!list) return;
+
+  const history = readIqHistory();
+  if (history.length === 0) {
+    list.innerHTML = '<li><span>No saved Level Up matches yet.</span><span class="scoreline">0 entries</span></li>';
+    return;
+  }
+
+  list.innerHTML = history.map(item => {
+    const when = new Date(item.timestamp).toLocaleString();
+    const modeLabel = item.mode === 'AUTON_SKILLS' ? 'AUTON' : item.mode === 'DRIVING_SKILLS' ? 'DRIVE' : 'TEAM';
+    return `<li><span>${when} · ${modeLabel}</span><span class="scoreline">${item.score} pts</span></li>`;
+  }).join('');
+}
+
+window.VIQRCLevelUp = {
+  computeLevelUpScore,
+  getState: () => ({ ...iqState, counts: { ...iqState.counts } }),
+  setIqMode,
+  adjustIqCount,
+  resetIqCounts,
+  runIqDemo,
+};
+
+const AUTON_MIN_SECONDS = 30;
+const AUTON_MAX_SECONDS = 90;
+
+const AutonWakeLock = {
+  sentinel: null,
+  runningCount: 0,
+  async update(delta) {
+    this.runningCount = Math.max(0, this.runningCount + delta);
+    if ('wakeLock' in navigator) {
+      if (this.runningCount > 0 && !this.sentinel) {
+        try {
+          this.sentinel = await navigator.wakeLock.request('screen');
+          this.sentinel.addEventListener('release', () => {
+            this.sentinel = null;
+          });
+        } catch {
+          // Ignore wake-lock failures on unsupported or restricted contexts.
+        }
+      }
+      if (this.runningCount === 0 && this.sentinel) {
+        try {
+          await this.sentinel.release();
+        } catch {
+          // Ignore release failures.
+        }
+        this.sentinel = null;
+      }
+    }
+  },
+};
+
+class SharedAutonTimer {
+  constructor(opts) {
+    this.key = opts.key;
+    this.ui = opts.ui;
+    this.defaultSeconds = opts.defaultSeconds;
+    this.state = {
+      duration: this.defaultSeconds,
+      remaining: this.defaultSeconds,
+      running: false,
+      tapMode: false,
+      endAt: null,
+      vibrationTriggered: false,
+      completed: false,
+    };
+    this.interval = null;
+    this.load();
+    this.bind();
+    this.render();
+    this.startLoopIfNeeded();
+  }
+
+  clampDuration(val) {
+    return Math.max(AUTON_MIN_SECONDS, Math.min(AUTON_MAX_SECONDS, val));
+  }
+
+  load() {
+    try {
+      const raw = localStorage.getItem(this.key);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      this.state.duration = this.clampDuration(Number(data.duration || this.defaultSeconds));
+      this.state.remaining = this.clampDuration(Number(data.remaining || this.state.duration));
+      this.state.running = !!data.running;
+      this.state.tapMode = !!data.tapMode;
+      this.state.endAt = Number.isFinite(data.endAt) ? data.endAt : null;
+      this.state.vibrationTriggered = !!data.vibrationTriggered;
+      this.state.completed = !!data.completed;
+      if (this.state.running && this.state.endAt) {
+        const remain = Math.max(0, Math.ceil((this.state.endAt - Date.now()) / 1000));
+        this.state.remaining = remain;
+        if (remain === 0) {
+          this.finish();
+        }
+      }
+    } catch {
+      // Ignore invalid persisted state.
+    }
+  }
+
+  save() {
+    localStorage.setItem(this.key, JSON.stringify(this.state));
+  }
+
+  bind() {
+    const durationInput = document.getElementById(this.ui.durationInput);
+    const tapToggle = document.getElementById(this.ui.tapToggle);
+    const tapZone = document.getElementById(this.ui.tapZone);
+    if (durationInput) durationInput.value = String(this.state.duration);
+    if (tapToggle) {
+      tapToggle.checked = this.state.tapMode;
+      tapToggle.addEventListener('change', () => {
+        this.state.tapMode = tapToggle.checked;
+        this.save();
+        this.render();
+      });
+    }
+    if (tapZone) {
+      tapZone.addEventListener('click', () => {
+        if (!this.state.tapMode) return;
+        if (this.state.remaining === 0) this.reset();
+        this.start();
+      });
+    }
+  }
+
+  applyDurationSetting() {
+    const input = document.getElementById(this.ui.durationInput);
+    if (!input) return;
+    const next = this.clampDuration(Number(input.value || this.defaultSeconds));
+    this.state.duration = next;
+    this.state.remaining = next;
+    this.state.completed = false;
+    this.state.vibrationTriggered = false;
+    input.value = String(next);
+    if (this.state.running) {
+      this.state.endAt = Date.now() + (this.state.remaining * 1000);
+    }
+    this.save();
+    this.render();
+  }
+
+  async start() {
+    if (this.state.running) return;
+    this.state.running = true;
+    this.state.completed = false;
+    this.state.endAt = Date.now() + (this.state.remaining * 1000);
+    this.save();
+    this.startLoopIfNeeded();
+    await AutonWakeLock.update(1);
+    this.render();
+  }
+
+  async pause() {
+    if (this.state.running) {
+      this.tick();
+      this.state.running = false;
+      this.state.endAt = null;
+      this.save();
+      await AutonWakeLock.update(-1);
+      this.stopLoopIfIdle();
+      this.render();
+      return;
+    }
+    if (this.state.remaining > 0) {
+      await this.start();
+    }
+  }
+
+  async reset() {
+    if (this.state.running) {
+      this.state.running = false;
+      this.state.endAt = null;
+      await AutonWakeLock.update(-1);
+    }
+    this.state.remaining = this.state.duration;
+    this.state.vibrationTriggered = false;
+    this.state.completed = false;
+    this.save();
+    this.stopLoopIfIdle();
+    this.render();
+  }
+
+  async finish() {
+    this.state.running = false;
+    this.state.endAt = null;
+    this.state.remaining = 0;
+    this.state.completed = true;
+    this.save();
+    await AutonWakeLock.update(-1);
+    this.stopLoopIfIdle();
+    this.render();
+  }
+
+  tick() {
+    if (!this.state.running || !this.state.endAt) return;
+    const nextRemaining = Math.max(0, Math.ceil((this.state.endAt - Date.now()) / 1000));
+    this.state.remaining = nextRemaining;
+
+    if (nextRemaining <= 3 && nextRemaining > 0 && !this.state.vibrationTriggered) {
+      if (navigator.vibrate) navigator.vibrate(100);
+      this.state.vibrationTriggered = true;
+    }
+
+    if (nextRemaining === 0) {
+      this.finish();
+      return;
+    }
+
+    this.save();
+    this.render();
+  }
+
+  startLoopIfNeeded() {
+    if (!this.state.running || this.interval) return;
+    this.interval = setInterval(() => this.tick(), 250);
+  }
+
+  stopLoopIfIdle() {
+    if (this.state.running) return;
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+  }
+
+  format() {
+    const mins = Math.floor(this.state.remaining / 60);
+    const secs = this.state.remaining % 60;
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  }
+
+  render() {
+    const timeEl = document.getElementById(this.ui.time);
+    const bannerEl = document.getElementById(this.ui.banner);
+    const tapZone = document.getElementById(this.ui.tapZone);
+
+    if (timeEl) {
+      timeEl.textContent = this.format();
+      timeEl.classList.toggle('urgent', this.state.remaining <= 10 && this.state.remaining > 0);
+    }
+    if (bannerEl) {
+      bannerEl.classList.toggle('show', this.state.completed);
+    }
+    if (tapZone) {
+      tapZone.classList.toggle('show', this.state.tapMode);
+    }
+  }
+}
+
+const autonTimers = {
+  override: null,
+  iq: null,
+};
+
+function initAutonTimers() {
+  autonTimers.override = new SharedAutonTimer({
+    key: 'auton-timer-override',
+    defaultSeconds: 60,
+    ui: {
+      time: 'auton-time-override',
+      banner: 'auton-banner-override',
+      durationInput: 'auton-duration-override',
+      tapToggle: 'auton-tap-override',
+      tapZone: 'auton-tapzone-override',
+    },
+  });
+  autonTimers.iq = new SharedAutonTimer({
+    key: 'auton-timer-iq',
+    defaultSeconds: 60,
+    ui: {
+      time: 'auton-time-iq',
+      banner: 'auton-banner-iq',
+      durationInput: 'auton-duration-iq',
+      tapToggle: 'auton-tap-iq',
+      tapZone: 'auton-tapzone-iq',
+    },
+  });
+}
+
+function toggleAutonPanel(app) {
+  const panel = document.getElementById(`auton-panel-${app}`);
+  if (!panel) return;
+  panel.classList.toggle('open');
+}
+
+function showScreen(screenName) {
+  const screens = ['hub', 'override', 'iq'];
+  screens.forEach(name => {
+    const el = document.getElementById(`${name}-screen`);
+    el.classList.toggle('active', name === screenName);
+  });
+}
 
 function startTimer() {
   if (running) return;
@@ -951,6 +2062,18 @@ function recalculate() {
 renderTimer();
 recalculate();
 renderScoreHistory();
+renderIqScorer();
+renderIqHistory();
+initAutonTimers();
+
+const iqResetBtn = document.getElementById('iq-reset-btn');
+if (iqResetBtn) {
+  iqResetBtn.addEventListener('click', () => {
+    resetIqCounts();
+  });
+}
+
+showScreen('hub');
 </script>
 </body>
 </html>
