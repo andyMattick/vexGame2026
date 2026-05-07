@@ -254,6 +254,13 @@
     letter-spacing: 1.5px;
     font-variant-numeric: tabular-nums;
   }
+  #iq-timer.urgent { color: var(--red); animation: pulse 0.5s infinite alternate; }
+  .iq-timer-controls {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
   .iq-mode-row {
     display: flex;
     gap: 8px;
@@ -544,6 +551,7 @@
   }
   #phase-badge.auto { background: #fdd835; color: #000; }
   #phase-badge.driver { background: #1e88e5; color: #fff; }
+  #phase-badge.done { background: #238636; color: #fff; }
   #timer {
     font-size: 2.8rem;
     font-weight: 900;
@@ -915,7 +923,6 @@
   </div>
 
   <div id="timer-block">
-    <div id="phase-badge">Pre-Match</div>
     <div id="timer">2:00</div>
     <div id="timer-controls">
       <button class="btn btn-start" id="btn-start" onclick="startTimer()">▶ Start</button>
@@ -932,7 +939,7 @@
 
 <div class="auton-helper">
   <button class="btn btn-reset" onclick="toggleAutonPanel('override')">Auton Timer</button>
-  <div id="auton-panel-override" class="auton-panel">
+  <div id="auton-panel-override" class="auton-panel open">
     <div class="auton-top">
       <div id="auton-time-override" class="auton-big">1:00</div>
       <div class="auton-controls">
@@ -1179,12 +1186,39 @@
       <div class="iq-score-value" id="iq-total-score">0</div>
     </div>
     <div class="iq-timer-wrap">
+      <div id="iq-timer">2:00</div>
+      <div class="iq-timer-controls">
+        <button class="btn btn-start" id="iq-btn-start" onclick="startIqTimer()">▶ Start</button>
+        <button class="btn btn-pause" id="iq-btn-pause" onclick="pauseIqTimer()" style="display:none">⏸ Pause</button>
+        <button class="btn btn-reset" onclick="resetIqTimer()">↺ Reset</button>
+      </div>
       <div id="iq-phase" class="teamwork">Teamwork Match</div>
       <div id="iq-note" class="screen-title" style="letter-spacing:1px;">Post-match visual count scoring</div>
     </div>
     <div class="iq-score-card blue">
       <div class="iq-score-label">Bean Bags Counted</div>
       <div class="iq-score-value" id="iq-total-bags">0</div>
+    </div>
+  </div>
+
+  <div class="auton-helper">
+    <button class="btn btn-reset" onclick="toggleAutonPanel('iq')">Auton Timer</button>
+    <div id="auton-panel-iq" class="auton-panel open">
+      <div class="auton-top">
+        <div id="auton-time-iq" class="auton-big">1:00</div>
+        <div class="auton-controls">
+          <button class="btn btn-start" onclick="autonTimers.iq.start()">Start</button>
+          <button class="btn btn-pause" onclick="autonTimers.iq.pause()">Pause/Resume</button>
+          <button class="btn btn-reset" onclick="autonTimers.iq.reset()">Reset</button>
+        </div>
+      </div>
+      <div class="auton-settings">
+        <label>Duration (30-90s): <input id="auton-duration-iq" class="auton-input" type="number" min="30" max="90" step="1"></label>
+        <button class="btn btn-reset" onclick="autonTimers.iq.applyDurationSetting()">Apply</button>
+        <label><input id="auton-tap-iq" type="checkbox"> Tap anywhere to start</label>
+      </div>
+      <div id="auton-banner-iq" class="auton-banner">Auton Complete</div>
+      <div id="auton-tapzone-iq" class="tap-start">Tap anywhere in this box to start/restart autonomous timer</div>
     </div>
   </div>
 
@@ -1271,26 +1305,6 @@
       <ul id="iq-history-list"></ul>
     </div>
 
-    <div class="auton-helper" style="margin-top:12px;">
-      <button class="btn btn-reset" onclick="toggleAutonPanel('iq')">Auton Timer</button>
-      <div id="auton-panel-iq" class="auton-panel">
-        <div class="auton-top">
-          <div id="auton-time-iq" class="auton-big">1:00</div>
-          <div class="auton-controls">
-            <button class="btn btn-start" onclick="autonTimers.iq.start()">Start</button>
-            <button class="btn btn-pause" onclick="autonTimers.iq.pause()">Pause/Resume</button>
-            <button class="btn btn-reset" onclick="autonTimers.iq.reset()">Reset</button>
-          </div>
-        </div>
-        <div class="auton-settings">
-          <label>Duration (30-90s): <input id="auton-duration-iq" class="auton-input" type="number" min="30" max="90" step="1"></label>
-          <button class="btn btn-reset" onclick="autonTimers.iq.applyDurationSetting()">Apply</button>
-          <label><input id="auton-tap-iq" type="checkbox"> Tap anywhere to start</label>
-        </div>
-        <div id="auton-banner-iq" class="auton-banner">Auton Complete</div>
-        <div id="auton-tapzone-iq" class="tap-start">Tap anywhere in this box to start/restart autonomous timer</div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1325,6 +1339,12 @@ let remaining = TOTAL;
 let running   = false;
 let interval  = null;
 let autoPhaseEnded = false;
+
+const IQ_TOTAL = 120;      // 2:00 total
+const IQ_AUTO_END = 105;   // 15s auto -> remaining = 105
+let iqRemaining = IQ_TOTAL;
+let iqRunning = false;
+let iqInterval = null;
 
 // ── VIQRC Level Up (official count-based scorer) ───────────────────────────
 const IQ_POINTS = {
@@ -1805,6 +1825,70 @@ function resetTimer() {
   renderTimer();
 }
 
+function startIqTimer() {
+  if (iqRunning) return;
+  iqRunning = true;
+  document.getElementById('iq-btn-start').style.display = 'none';
+  document.getElementById('iq-btn-pause').style.display = '';
+  iqInterval = setInterval(tickIqTimer, 1000);
+}
+
+function pauseIqTimer() {
+  iqRunning = false;
+  clearInterval(iqInterval);
+  document.getElementById('iq-btn-start').style.display = '';
+  document.getElementById('iq-btn-pause').style.display = 'none';
+}
+
+function resetIqTimer() {
+  pauseIqTimer();
+  iqRemaining = IQ_TOTAL;
+  renderIqTimer();
+}
+
+function tickIqTimer() {
+  if (iqRemaining <= 0) {
+    clearInterval(iqInterval);
+    iqRunning = false;
+    document.getElementById('iq-btn-start').style.display = '';
+    document.getElementById('iq-btn-pause').style.display = 'none';
+    renderIqTimer();
+    return;
+  }
+  iqRemaining--;
+  renderIqTimer();
+}
+
+function renderIqTimer() {
+  const timerEl = document.getElementById('iq-timer');
+  const phaseEl = document.getElementById('iq-timer-phase');
+  if (!timerEl) return;
+
+  const mins = Math.floor(iqRemaining / 60);
+  const secs = iqRemaining % 60;
+  timerEl.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+
+  const isAuto = iqRemaining > IQ_AUTO_END;
+  const isDone = iqRemaining === 0;
+  const isUrgent = iqRemaining <= 30 && iqRemaining > 0;
+
+  timerEl.classList.toggle('urgent', isUrgent);
+
+  if (phaseEl) {
+    phaseEl.className = 'phase-badge';
+    if (isDone) {
+      phaseEl.classList.add('done');
+      phaseEl.textContent = 'Match Over';
+    } else if (isAuto) {
+      phaseEl.classList.add('auto');
+      phaseEl.textContent = 'Autonomous';
+    } else {
+      phaseEl.classList.add('driver');
+      phaseEl.textContent = 'Driver Control';
+    }
+  }
+}
+
 function tick() {
   if (remaining <= 0) {
     clearInterval(interval);
@@ -1837,15 +1921,17 @@ function renderTimer() {
 
   el.classList.toggle('urgent', isUrgent);
 
-  if (isDone) {
-    badge.className = 'phase-badge';
-    badge.textContent = 'Match Over';
-  } else if (isAuto) {
-    badge.className = 'phase-badge auto';
-    badge.textContent = 'Autonomous';
-  } else {
-    badge.className = 'phase-badge driver';
-    badge.textContent = 'Driver Control';
+  if (badge) {
+    if (isDone) {
+      badge.className = 'phase-badge';
+      badge.textContent = 'Match Over';
+    } else if (isAuto) {
+      badge.className = 'phase-badge auto';
+      badge.textContent = 'Autonomous';
+    } else {
+      badge.className = 'phase-badge driver';
+      badge.textContent = 'Driver Control';
+    }
   }
 }
 
@@ -2063,6 +2149,7 @@ renderTimer();
 recalculate();
 renderScoreHistory();
 renderIqScorer();
+renderIqTimer();
 renderIqHistory();
 initAutonTimers();
 
